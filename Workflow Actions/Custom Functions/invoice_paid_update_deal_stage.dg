@@ -1,0 +1,24 @@
+void invoice_paid_update_deal_stage( map invoice, map organization, map user) {
+
+dealid = invoice.get("zcrm_potential_id");
+info dealid;
+resp = zoho.crm.getRecordById("Deals",dealid,"zoho_crm_connection_new");
+info resp;
+nda_Signed = resp.get("NDA_Signed");
+currentStage = resp.get("Stage");
+info currentStage;
+if(currentStage == "Invoice Sent")
+{
+	transition = 5565720000005567011;
+	// Hardcoding the transition 
+	response = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2/Deals/" + dealid + "/actions/blueprint"
+		type :PUT
+		parameters:"{\"blueprint\": [{\"transition_id\": \"" + transition + "\",\"data\":{\"Stage\": Closed Won}}]}"
+		connection:"zoho_crm_connection_new"
+	];
+	info response;
+}
+
+ }
