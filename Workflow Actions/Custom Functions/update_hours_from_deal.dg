@@ -1,0 +1,35 @@
+void update_hours_from_deal( map 
+estimate
+ , map 
+organization
+ , map 
+user
+ ) {
+ 
+/*
+This is a sample function. Uncomment to execute or make changes to this function.  
+estimateID = estimate.get("estimate_id");
+estimatedate = estimate.get("date").toDate();
+organizationID = organization.get("organization_id");
+*/
+estimateID = estimate.get("estimate_id");
+organizationID = organization.get("organization_id");
+zcrm_potential_id = estimate.get("zcrm_potential_id");
+Deal = zoho.crm.getRecordById("Deals",zcrm_potential_id,"zoho_crm_connection_new");
+Hours_Estimate = Deal.get("Hours_Estimate");
+if(Hours_Estimate != "" && Hours_Estimate != null)
+{
+	// CUSTOM FIELD MAPPING
+	mapCustomField = Map();
+	mapCustomField.put("label","Hours");
+	mapCustomField.put("value",Hours_Estimate);
+	// CUSTOM FIELD LIST
+	lstCustomField = List();
+	lstCustomField.add(mapCustomField);
+	// RETAINER INVOICE MAP
+	mapInvoice = Map();
+	mapInvoice.put("custom_fields",lstCustomField);
+	zoho.books.updateRecord("estimates",organizationID,estimateID,mapInvoice,"zbooks");
+}
+
+ }
