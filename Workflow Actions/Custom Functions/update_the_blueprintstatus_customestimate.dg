@@ -1,0 +1,39 @@
+void update_the_blueprintstatus_customestimate( map estimate, map organization, map user) {
+
+/*
+This is a sample function. Uncomment to execute or make changes to this function.  
+estimateID = estimate.get("estimate_id");
+estimatedate = estimate.get("date").toDate();
+organizationID = organization.get("organization_id");
+*/
+dealid = estimate.get("zcrm_potential_id");
+info dealid;
+resp = zoho.crm.getRecordById("Deals",dealid,"zoho_crm_connection_new");
+//info resp;
+info resp.get("Stage");
+// Need to Send Custom Estimate
+if(resp.get("Stage") == "Draft Estimate Created")
+{
+	currentStage = resp.get("Stage");
+	info currentStage;
+	// Using the below script to get the transition IDs
+	// 	response1 = invokeurl
+	// 	[
+	// 		url :"https://www.zohoapis.com/crm/v2.1/Deals/" + dealid + "/actions/blueprint"
+	// 		type :GET
+	// 		connection:"zoho_crm_connection_new"
+	// 	];
+	// //	info response1;
+	// Next Stage is Custom Estimate Sent. 
+	transition = 5565720000007617006;
+	response = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2/Deals/" + dealid + "/actions/blueprint"
+		type :PUT
+		parameters:"{\"blueprint\": [{\"transition_id\": \"" + transition + "\",\"data\":{\"Stage\": Estimate Approved}}]}"
+		connection:"zoho_crm_connection_new"
+	];
+	info response;
+}
+
+}
