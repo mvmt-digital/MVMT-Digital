@@ -1,0 +1,55 @@
+void on_invoice_paid_update_date_in_projects( map 
+invoice
+ , map 
+organization
+ , map 
+user
+ ) {
+ 
+/*
+This is a sample function. Uncomment to execute or make changes to this function.
+invoiceID = invoice.get("invoice_id");
+invoicedate = invoice.get("date").toDate();
+organizationID = organization.get("organization_id");
+UDF_DOUBLE1
+*/
+first_portal_id = zoho.projects.getPortals("projects").get("portals").get(0).get("id");
+customer_name = invoice.get("customer_name");
+hours = invoice.get("custom_field_hash").get("cf_hours");
+params_map = Map();
+params_map.put("index",1);
+params_map.put("range",100);
+params_map.put("search_term",customer_name);
+params_map.put("module","projects");
+getProject = invokeurl
+[
+	url :"https://projectsapi.zoho.com/restapi/portal/" + first_portal_id + "/search"
+	type :GET
+	parameters:params_map
+	connection:"projects"
+];
+info getProject;
+for each  prj in getProject.get("projects")
+{
+	if(prj.get("name") == customer_name)
+	{
+		proJect_ID = prj.get("id");
+	}
+}
+if(proJect_ID != null)
+{
+	Update_Project = Map();
+	dateUpdate = toString(today.toDate(),"MM-dd-yyyy");
+	Update_Project.put("UDF_DATE2",dateUpdate);
+	Update_Project.put("UDF_DOUBLE1",hours);
+	Update_Project.put("UDF_CHAR7",invoice.get("invoice_number"));
+	getProject = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + first_portal_id + "/projects/" + proJect_ID + "/"
+		type :POST
+		parameters:Update_Project
+		connection:"projects"
+	];
+}
+
+ }
