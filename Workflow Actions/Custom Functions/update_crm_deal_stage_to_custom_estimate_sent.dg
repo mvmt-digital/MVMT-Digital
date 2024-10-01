@@ -1,0 +1,36 @@
+void update_crm_deal_stage_to_custom_estimate_sent( map estimate, map organization, map user) {
+dealid = estimate.get("zcrm_potential_id");
+info dealid;
+resp = zoho.crm.getRecordById("Deals",dealid,"zoho_crm_connection_new");
+currentStage = resp.get("Stage");
+info currentStage;
+if(currentStage == "Draft Estimate Created")
+{
+	response1 = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2.1/Deals/" + dealid + "/actions/blueprint"
+		type :GET
+		connection:"zoho_crm_connection_new"
+	];
+	info response1;
+	// Custom Estimate Sent ------> Transition Id: 5565720000007617006
+	transition = 5565720000007617006;
+	dataMap = Map();
+	dataMap.put("Language",resp.get("Contact_Language"));
+	BlueprintMap = Map();
+	BlueprintMap.put("transition_id",transition);
+	BlueprintMap.put("data",dataMap);
+	lis2 = List();
+	lis2.add(BlueprintMap);
+	ParamMap = Map();
+	ParamMap.put("blueprint",lis2);
+	response = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2/Deals/" + dealid + "/actions/blueprint"
+		type :PUT
+		parameters:ParamMap.toString()
+		connection:"zoho_crm_connection_new"
+	];
+	info response;
+}
+}
