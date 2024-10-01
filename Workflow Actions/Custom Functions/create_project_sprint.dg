@@ -1,0 +1,98 @@
+void create_project_sprint( map 
+estimate
+ , map 
+organization
+ , map 
+user
+ ) {
+
+/*
+This is a sample function. Uncomment to execute or make changes to this function.  
+estimateID = estimate.get("estimate_id");
+estimatedate = estimate.get("date").toDate();
+organizationID = organization.get("organization_id");
+*/
+/*
+This is a sample function. Uncomment to execute or make changes to this function.
+*/
+first_portal_id = zoho.projects.getPortals("projects").get("portals").get(0).get("id");
+estimateID = estimate.get("estimate_id");
+estimate_number = estimate.get("estimate_number");
+estimatedate = estimate.get("date").toDate();
+organizationID = organization.get("organization_id");
+hours = estimate.get("custom_field_hash").get("cf_hours");
+zcrm_potential_id = estimate.get("zcrm_potential_id");
+customer_id = estimate.get("customer_id");
+customer = zoho.books.getRecordsByID("contacts",organizationID,customer_id,"zbooks");
+email = customer.get("contact").get("email");
+emailList = email.toList("@");
+domain = emailList.get(1);
+// GET DOMAIN NAME FROM CUSTOME EMAIL 
+//
+// *********************** Search If Projects is already Created  *************** //
+desk_project_mapping = zoho.crm.searchRecords("Desk_Projects_Mapping","Domain:equals:" + domain,1,200,"zoho_crm_connection_new");
+mapping_count = desk_project_mapping.size();
+Epics_Search = zoho.crm.searchRecords("Epics","Estimate_Number:equals:" + domain,1,200,"zoho_crm_connection_new");
+if(zcrm_potential_id != null && zcrm_potential_id != "")
+{
+	// CHECK IF ESTIMATE IS CREATED THROUGH CRM
+	dealInfo = zoho.crm.getRecordById("Deals",zcrm_potential_id,"zoho_crm_connection_new");
+	dealType = dealInfo.get("Type");
+	if(dealType = "New Business" && mapping_count == 0)
+	{
+		customer_name = estimate.get("customer_name");
+		// **************** PROJECT MAPPING START ****************** //
+		Update_Project = Map();
+		dateUpdate = toString(today.toDate(),"MM-dd-yyyy");
+		Update_Project.put("UDF_DATE2",dateUpdate);
+		// DATE CUSTOM FIELD IN PROJECTS
+		Update_Project.put("name",customer_name);
+		Update_Project.put("UDF_DOUBLE1",hours);
+		// HOURS CUSTOME FIELD IN PROJECTS
+		Update_Project.put("enable_sprints","yes");
+		// THIS IS USE TO SYNCH PROJECT TO SPRINTS
+		Update_Project.put("UDF_CHAR7",estimate.get("estimate_number"));
+		// INVOICE NUMBER CUSTOM FIELD IN PROJECTS 
+		// **************** PROJECT MAPPING END ****************** //
+		// ***********  CREATE PROJECT  START  ************ //
+		getProject = invokeurl
+		[
+			url :"https://projectsapi.zoho.com/restapi/portal/" + first_portal_id + "/projects/"
+			type :POST
+			parameters:Update_Project
+			connection:"projects"
+		];
+		// ***********  CREATE PROJECT  END   ************ //
+		projectID = getProject.get("projects").get(0).get("id");
+		// GET PROJECT ID OF NEWLY CRETED PROJECT 
+		// ***********  CRM Desk_Projects_Mapping CODE FOR  ZOHO DESK START  ****      //
+		crm = Map();
+		crm.put("Project_ID",projectID.toString());
+		crm.put("Domain",domain);
+		crm.put("Name",customer_name);
+		abc = Map();
+		zoho.crm.createRecord("Desk_Projects_Mapping",crm,{"trigger":{"workflow"}},"zoho_crm_connection_new");
+		// ***********  CRM Desk_Projects_Mapping CODE FOR  ZOHO DESK END  ****      //
+	}
+	Epic_Name = "Custom Bank of Hours";
+	epic_map = Map();
+	if(hours != null && hours != "")
+	{
+		Epic_Name = hours + " Bank of Hours";
+		epic_map.put("Hours",hours);
+	}
+	epic_map.put("Name",Epic_Name);
+	epic_map.put("Domain",domain);
+	epic_map.put("Estimate_Number",estimate_number);
+	if(Epics_Search.size() > 0)
+	{
+		Epic_ID = Epics_Search.get(0).get("id");
+		zoho.crm.updateRecord("Epics",Epic_ID,epic_map,{"trigger":{"workflow"}},"zoho_crm_connection_new");
+	}
+	else
+	{
+		zoho.crm.createRecord("Epics",epic_map,{"trigger":{"workflow"}},"zoho_crm_connection_new");
+	}
+}
+
+ }
