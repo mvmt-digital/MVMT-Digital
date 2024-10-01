@@ -1,0 +1,30 @@
+void invoicesentchangedealstage( map invoice, map organization, map user) {
+
+/*
+This is a sample function. Uncomment to execute or make changes to this function.
+invoiceID = invoice.get("invoice_id");
+invoicedate = invoice.get("date").toDate();
+organizationID = organization.get("organization_id");
+*/
+dealid = invoice.get("zcrm_potential_id");
+info dealid;
+resp = zoho.crm.getRecordById("Deals",dealid,"zoho_crm_connection_new");
+info resp;
+nda_Signed = resp.get("NDA_Signed");
+currentStage = resp.get("Stage");
+info currentStage;
+if(currentStage == "Estimate Approved" || currentStage == "Estimate Approved + NDA Signed")
+{
+	transition = 5565720000005567010;
+	// Hardcoding the transition 
+	response = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2/Deals/" + dealid + "/actions/blueprint"
+		type :PUT
+		parameters:"{\"blueprint\": [{\"transition_id\": \"" + transition + "\",\"data\":{\"Stage\": Closed Won}}]}"
+		connection:"zoho_crm_connection_new"
+	];
+	info response;
+}
+
+}
