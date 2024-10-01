@@ -1,0 +1,58 @@
+void update_crm_deal_stage_to_estimate_accepted( map estimate, map organization, map user) {
+
+dealid = estimate.get("zcrm_potential_id");
+info dealid;
+resp = zoho.crm.getRecordById("Deals",dealid,"zoho_crm_connection_new");
+currentStage = resp.get("Stage");
+info "CURRENT STAGE";
+info currentStage;
+if(currentStage == "Estimate + NDA Sent")
+{
+	transition = 5565720000005567009;
+	// New
+	response = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2/Deals/" + dealid + "/actions/blueprint"
+		type :PUT
+		parameters:"{\"blueprint\": [{\"transition_id\": \"" + transition + "\",\"data\":{\"Stage\": Estimate Approved}}]}"
+		connection:"zoho_crm_connection_new"
+	];
+	info response;
+	newResp = zoho.crm.getRecordById("Deals",dealid);
+	currentStage = newResp.get("Stage");
+	info currentStage;
+}
+else if(currentStage == "Custom Estimate Sent")
+{
+	info "CUSTOM ESTIMATE";
+	transition = 5565720000012251014;
+	response = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2/Deals/" + dealid + "/actions/blueprint"
+		type :PUT
+		parameters:"{\"blueprint\": [{\"transition_id\": \"" + transition + "\"}]}"
+		connection:"zoho_crm_connection_new"
+	];
+	info response;
+	newResp = zoho.crm.getRecordById("Deals",dealid);
+	currentStage = newResp.get("Stage");
+	info currentStage;
+}
+else if(currentStage == "Estimate Only Sent")
+{
+	info "ONLY ESTIMATE";
+	transition = 5565720000012251001;
+	response = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2/Deals/" + dealid + "/actions/blueprint"
+		type :PUT
+		parameters:"{\"blueprint\": [{\"transition_id\": \"" + transition + "\"}]}"
+		connection:"zoho_crm_connection_new"
+	];
+	info response;
+	newResp = zoho.crm.getRecordById("Deals",dealid,"zoho_crm_connection_new");
+	currentStage = newResp.get("Stage");
+	info currentStage;
+}
+
+}
