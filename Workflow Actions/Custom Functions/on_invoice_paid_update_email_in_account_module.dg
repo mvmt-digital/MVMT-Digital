@@ -1,0 +1,24 @@
+void on_invoice_paid_update_email_in_account_module( map 
+invoice
+ , map 
+organization
+ , map 
+user
+ ) {
+
+/*
+This is a sample function. Uncomment to execute or make changes to this function.
+invoiceID = invoice.get("invoice_id");
+invoicedate = invoice.get("date").toDate();
+organizationID = organization.get("organization_id");
+*/
+organizationID = organization.get("organization_id");
+customer_id = invoice.get("customer_id");
+customer = zoho.books.getRecordsByID("contacts",organizationID,customer_id,"zbooks");
+crm_contact_id = customer.get("contact").get("zcrm_contact_id");
+crm_account_id = customer.get("contact").get("zcrm_account_id");
+crm_records = zoho.crm.getRecordById("Contacts",crm_contact_id,"zoho_crm_connection_new");
+email = crm_records.get("Email");
+zoho.crm.updateRecord("Accounts",crm_account_id,{"Accounting_Holder_Email":email},"zoho_crm_connection_new");
+
+ }
