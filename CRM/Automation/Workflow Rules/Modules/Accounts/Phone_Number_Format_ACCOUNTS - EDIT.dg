@@ -1,0 +1,18 @@
+void automation.Phone_Number_Format_ACCOUNTS(Int recordId)
+{
+clientDetails = zoho.crm.getRecordById("Accounts",recordId);
+phoneNumber = clientDetails.get("Phone").getAlphaNumeric().removeAllAlpha();
+info phoneNumber;
+if(phoneNumber.startsWith("1"))
+{
+	newphone = "+1(" + phoneNumber.subString(1,4) + ") " + phoneNumber.subString(4,7) + "-" + phoneNumber.subString(7);
+	info "If : " + newphone;
+}
+else
+{
+	newphone = "+1(" + phoneNumber.subString(0,3) + ") " + phoneNumber.subString(3,6) + "-" + phoneNumber.subString(6);
+	info "Else case :" + newphone;
+}
+updateClient = zoho.crm.updateRecord("Accounts",recordId,{"Phone":newphone});
+info updateClient;
+}
