@@ -1,0 +1,56 @@
+void invoicesendoncreate( map invoice, map organization, map user) {
+
+/*
+This is a sample function. Uncomment to execute or make changes to this function.
+invoiceID = invoice.get("invoice_id");
+invoicedate = invoice.get("date").toDate();
+organizationID = organization.get("organization_id");
+*/
+intOrganizationId = organization.get("organization_id");
+customer_id = invoice.get("customer_id");
+decTotal = invoice.get("total");
+// GET CUSTOMER RECORD
+recCustomer = zoho.books.getRecordsByID("Contacts",intOrganizationId,customer_id,"zbooks");
+//info recCustomer;
+emlToEmail = recCustomer.get("contact").get("email");
+invoiceID = invoice.get("invoice_id");
+urlInvoiceUrl = invoice.get("invoice_url");
+dateInvoicedate = invoice.get("date").toDate();
+strInvoiceNumber = invoice.get("invoice_number");
+toEmail = List();
+toEmail.add(emlToEmail);
+mapParametersData = Map();
+mapParametersData.put("send_from_org_email_id",true);
+mapParametersData.put("to_mail_ids",toEmail);
+mapParametersData.put("subject","Invoice - " + strInvoiceNumber);
+mapParametersData.put("body","Dear Customer,         <br><br><br><br>Thanks for your business.<br><br>The  invoice  is attached with this email.<br>Here's an overview of the invoice for your reference.         <br><br><br><br>Invoice Overview:    <br><br>Invoice  : " + strInvoiceNumber + "    <br><br>Date : " + dateInvoicedate + "         <br><br>Amount : $" + decTotal + "        <br><br><br><br>It was great working with you. Looking forward to working with you again.");
+urlInvoiceSendApi = "https://www.zohoapis.com/books/v3/invoices/" + invoiceID + "/email?organization_id=" + intOrganizationId;
+response = invokeurl
+[
+	url :urlInvoiceSendApi
+	type :POST
+	parameters:mapParametersData.toString()
+	connection:"zbooks"
+];
+dealid = invoice.get("zcrm_potential_id");
+info dealid;
+resp = zoho.crm.getRecordById("Deals",dealid);
+info resp;
+nda_Signed = resp.get("NDA_Signed");
+currentStage = resp.get("Stage");
+info currentStage;
+if(currentStage == "Estimate Approved" || currentStage == "Estimate Approved + NDA Signed")
+{
+	transition = 5565720000005567010;
+	// Hardcoding the transition 
+	response = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2/Deals/" + dealid + "/actions/blueprint"
+		type :PUT
+		parameters:"{\"blueprint\": [{\"transition_id\": \"" + transition + "\",\"data\":{\"Stage\": Closed Won}}]}"
+		connection:"zoho_crm_connection_new"
+	];
+	info response;
+}
+
+}
