@@ -1,0 +1,55 @@
+void on_invoice_paid_create_new_project_sprint( map 
+invoice
+ , map 
+organization
+ , map 
+user
+ ) {
+
+/*
+This is a sample function. Uncomment to execute or make changes to this function.
+*/
+first_portal_id = zoho.projects.getPortals("projects").get("portals").get(0).get("id");
+invoiceID = invoice.get("invoice_id");
+invoicedate = invoice.get("date").toDate();
+organizationID = organization.get("organization_id");
+hours = invoice.get("custom_field_hash").get("cf_hours");
+zcrm_potential_id = invoice.get("zcrm_potential_id");
+customer_id = invoice.get("customer_id");
+customer = zoho.books.getRecordsByID("contacts",organizationID,customer_id,"zbooks");
+email = customer.get("contact").get("email");
+emailList = email.toList("@");
+domain = emailList.get(1);
+if(zcrm_potential_id != null && zcrm_potential_id != "")
+{
+	dealInfo = zoho.crm.getRecordById("Deals",zcrm_potential_id,"zoho_crm_connection_new");
+	dealType = dealInfo.get("Type");
+	if(dealType = "New Business")
+	{
+		customer_name = invoice.get("customer_name");
+		//customer_name = customer_name + " Test 1";
+		Update_Project = Map();
+		dateUpdate = toString(today.toDate(),"MM-dd-yyyy");
+		Update_Project.put("UDF_DATE2",dateUpdate);
+		Update_Project.put("name",customer_name);
+		Update_Project.put("UDF_DOUBLE1",hours);
+		Update_Project.put("enable_sprints","yes");
+		Update_Project.put("UDF_CHAR7",invoice.get("invoice_number"));
+		getProject = invokeurl
+		[
+			url :"https://projectsapi.zoho.com/restapi/portal/" + first_portal_id + "/projects/"
+			type :POST
+			parameters:Update_Project
+			connection:"projects"
+		];
+		projectID = getProject.get("projects").get(0).get("id");
+		crm = Map();
+		crm.put("Project_ID",projectID.toString());
+		crm.put("Domain",domain);
+		crm.put("Name",customer_name);
+		abc = Map();
+		zoho.crm.createRecord("Desk_Projects_Mapping",crm,abc,"zoho_crm_connection_new");
+	}
+}
+
+ }
